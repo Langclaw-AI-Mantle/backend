@@ -5,6 +5,7 @@ import { privateKeyToAccount } from "viem/accounts";
 import {
   buildChatWorkflowOptions,
   handleChatStream,
+  resolveEffectiveToolMode,
 } from "./chat-stream";
 import {
   createWalletChallenge,
@@ -109,6 +110,22 @@ test("direct chat requires wallet auth", async () => {
 
   assert.equal(response.status, 401);
   assert.match((await response.json() as { error: string }).error, /required/);
+});
+
+test("smart-money accumulation prompts auto-route from chat to research", () => {
+  assert.equal(
+    resolveEffectiveToolMode("Find smart-money accumulation on Arbitrum", "chat"),
+    "research"
+  );
+  assert.equal(
+    resolveEffectiveToolMode("Analyze smart money wallet flow on Ethereum", "chat"),
+    "research"
+  );
+  assert.equal(resolveEffectiveToolMode("what is smart money?", "chat"), "chat");
+  assert.equal(
+    resolveEffectiveToolMode("Find smart-money accumulation on Arbitrum", "research"),
+    "research"
+  );
 });
 
 test("legacy on-chain mode now aliases to research and still requires wallet auth", async () => {
@@ -281,7 +298,8 @@ test("direct chat honors supported body.model and returns metadata", async () =>
 });
 
 test("direct chat streams safe reasoning progress while OpenAI answer streams", async () => {
-  const restore = mockFetch((url) => {
+  let openAiInstructions = "";
+  const restore = mockFetch((url, init) => {
     const parsed = new URL(url);
 
     if (isSupabaseRequest(url)) {
@@ -289,6 +307,11 @@ test("direct chat streams safe reasoning progress while OpenAI answer streams", 
     }
 
     if (parsed.hostname === "api.openai.test") {
+      const body =
+        typeof init?.body === "string"
+          ? (JSON.parse(init.body) as Record<string, unknown>)
+          : {};
+      openAiInstructions = String(body.instructions ?? "");
       const firstDelta =
         "Halo. Aku akan susun jawaban yang rapi dengan konteks yang sudah ada. ";
       const secondDelta =
@@ -345,7 +368,7 @@ test("direct chat streams safe reasoning progress while OpenAI answer streams", 
         const response = await handleChatStream(
           new Request("http://localhost/api/chat/stream", {
             body: JSON.stringify({
-              message: "rapikan response AI",
+              message: "tolong rapikan response AI",
               wallet: await buildTestWallet(),
             }),
             method: "POST",
@@ -374,6 +397,8 @@ test("direct chat streams safe reasoning progress while OpenAI answer streams", 
         assert.ok(firstReasoningIndex < firstDeltaIndex);
         assert.match(reasoning, /Live stream: answer tokens received/);
         assert.match(reasoning, /Output drafted: about/);
+        assert.match(openAiInstructions, /Detected response language: Indonesian/);
+        assert.match(openAiInstructions, /Write all user-visible prose in Indonesian/);
         assert.equal(payload.source, "openai");
       }
     );

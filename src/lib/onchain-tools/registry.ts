@@ -38,7 +38,7 @@ const docs = {
   geckoterminal: "https://docs.coingecko.com/reference/networks-list",
   goplus: "https://docs.gopluslabs.io/docs/getting-started",
   nansen: "https://docs.nansen.ai/api/smart-money",
-  surf: "https://docs.asksurf.ai/data-api/overview",
+  surf: "https://agents.asksurf.ai/",
 };
 
 const commonProperties: JsonSchema["properties"] = {
@@ -172,6 +172,41 @@ const packs: DomainPack[] = [
     domain: "smart_money",
     commands: [
       seed(
+        "surf_smart_money_research",
+        "Surf smart-money ability research",
+        "Use the Surf backend skill through Chat Completions with EVM on-chain, market-analysis, search, and calculate abilities to retrieve candidate smart-money wallet-flow rows.",
+        "surf.chat_completions",
+        "surf",
+        ["query"],
+        "medium",
+        [
+          {
+            executor: "dune.smart_money_sql",
+            provider: "dune",
+          },
+          {
+            executor: "nansen.smart_money_netflow",
+            provider: "nansen",
+          },
+        ],
+        "mantle-premium"
+      ),
+      seed(
+        "smart_money_dune",
+        "Smart-money flow scan",
+        "Execute a generated Dune smart-money SQL query from safe chain and token parameters.",
+        "dune.smart_money_sql",
+        "dune",
+        ["query"],
+        "medium",
+        [
+          {
+            executor: "nansen.smart_money_netflow",
+            provider: "nansen",
+          },
+        ]
+      ),
+      seed(
         "nansen_smart_money_netflow",
         "Smart money netflow",
         "Read aggregated smart-money accumulation and distribution on Mantle through Nansen.",
@@ -181,7 +216,7 @@ const packs: DomainPack[] = [
         "medium",
         [
           {
-            executor: "dune.latest_result",
+            executor: "dune.smart_money_sql",
             provider: "dune",
           },
         ],
@@ -190,7 +225,6 @@ const packs: DomainPack[] = [
       seed("smart_wallet_balances", "Smart wallet balances", "Fetch token balances for a suspected smart-money wallet.", "alchemy.token_balances", "alchemy", ["walletAddress"]),
       seed("smart_wallet_transfers", "Smart wallet transfers", "Fetch recent transfer flow for accumulation or exit clues.", "alchemy.asset_transfers", "alchemy", ["walletAddress"]),
       seed("token_whale_transfers", "Token whale transfers", "Fetch recent token transfers for holder movement analysis.", "etherscan.token_transfers", "etherscan", ["tokenAddress"]),
-      seed("smart_money_dune", "Smart money Dune query", "Fetch a configured Dune smart-money query.", "dune.latest_result", "dune", ["queryId"], "medium"),
       seed("wallet_risk_screen", "Wallet risk screen", "Screen the tracked wallet for GoPlus risk flags.", "goplus.address_security", "goplus", ["walletAddress"], "medium"),
       seed("smart_money_signal_synthesis", "Smart money signal synthesis", "Summarize accumulation, exit, and risk clues.", "local.signal_synthesis", "local"),
     ],

@@ -299,7 +299,7 @@ function buildPrompt({
 
 function buildFallbackPlannerOutput(topic: string): PlannerOutput {
   return {
-    summary: `Created a provider plan for "${topic}" across Mantle premium and supporting public research providers.`,
+    summary: `Created a provider plan for "${topic}" across Surf and supporting public research providers.`,
     providerPlan: [
       {
         provider: "X",

@@ -123,6 +123,15 @@ const chains: Record<string, ChainConfig> = {
   },
 };
 
+const knownUnsupportedChains: Record<string, string> = {
+  aptos: "Aptos",
+  berachain: "Berachain",
+  monad: "Monad",
+  near: "NEAR",
+  sei: "Sei",
+  sui: "Sui",
+};
+
 export function resolveChain(input: string | undefined): ResolvedChainConfig {
   const normalized = input?.trim().toLowerCase() || defaultChain;
 
@@ -187,7 +196,11 @@ export function isProviderSupportedForChain(
 ) {
   const resolved = resolveChain(chain);
 
-  if (provider === "nansen" || provider === "surf" || provider === "elfa") {
+  if (provider === "surf") {
+    return true;
+  }
+
+  if (provider === "nansen" || provider === "elfa") {
     return resolved.id === "mantle";
   }
 
@@ -261,6 +274,12 @@ function detectExplicitChain(text: string) {
 function detectPotentialUnsupportedChain(
   text: string
 ): UnsupportedChainHint | undefined {
+  const named = detectNamedUnsupportedChain(text);
+
+  if (named) {
+    return named;
+  }
+
   const patterns = [
     /\bon\s+([a-z][a-z0-9\s-]{1,30}?)\s+(?:dex|pairs?|pools?|tokens?|protocols?|chain|network)\b/i,
     /\b([a-z][a-z0-9\s-]{1,30}?)\s+(?:chain|network)\b/i,
@@ -278,6 +297,29 @@ function detectPotentialUnsupportedChain(
       id: candidate.replace(/\s+/g, "-"),
       name: toTitleCase(candidate),
     };
+  }
+
+  return undefined;
+}
+
+function detectNamedUnsupportedChain(text: string) {
+  for (const [id, name] of Object.entries(knownUnsupportedChains)) {
+    const term = escapeRegExp(id);
+    const relationPattern = new RegExp(
+      `\\b(?:on|for|from|in|into)\\s+${term}(?:\\s+(?:chain|network|mainnet))?\\b`,
+      "i"
+    );
+    const chainPattern = new RegExp(
+      `\\b${term}\\s+(?:chain|network|mainnet)\\b`,
+      "i"
+    );
+
+    if (relationPattern.test(text) || chainPattern.test(text)) {
+      return {
+        id,
+        name,
+      };
+    }
   }
 
   return undefined;
