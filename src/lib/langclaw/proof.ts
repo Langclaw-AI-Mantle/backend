@@ -32,6 +32,7 @@ import type {
   ResearchReport,
   SourceCard,
   WorkflowChainContext,
+  AlphaSignal,
   ZeroGChainProof,
   ZeroGProof,
   ZeroGStorageProof,
@@ -51,6 +52,7 @@ type PersistProofInput = {
   finalConclusion: FinalConclusion;
   finalAnswer: FinalAnswer;
   agentOutputs: AgentOutputs;
+  alphaSignal?: AlphaSignal;
 };
 
 type PersistGenericMantleProofInput = {
@@ -173,6 +175,7 @@ function buildEvidenceBundle(input: PersistProofInput) {
     orchestrationSteps: input.steps,
     signals: input.signals,
     report: input.report,
+    alphaSignal: input.alphaSignal,
     agentOutputs: input.agentOutputs,
     finalConclusion: input.finalConclusion,
     finalAnswer: input.finalAnswer,

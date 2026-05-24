@@ -4,6 +4,7 @@ import { promisify } from "node:util";
 import { synthesizeFinalAnswerWithOpenClaw } from "./openclaw-ai";
 import { synthesizeFinalAnswerWithOpenAI } from "./openai-synthesis";
 import { applyFinalAnswerGuardrails } from "./final-answer-guardrails";
+import { buildAlphaSignal } from "./alpha-quality";
 import {
   createRunId,
   createStepSessionId,
@@ -492,6 +493,17 @@ export async function runLangclawWorkflow(
     `Preparing the agent decision hash and submitting it to LangclawRegistry on ${chain.name} when enabled.`
   );
   const generatedAt = new Date().toISOString();
+  const preProofAlphaSignal = buildAlphaSignal({
+    chainContext,
+    errors,
+    generatedAt,
+    onChain: onChainEnrichment.payload,
+    providerTrace,
+    report,
+    signals,
+    sources,
+    topic,
+  });
   const proof = await persistLangclawProof({
     chain: chain.id,
     runId,
@@ -513,6 +525,23 @@ export async function runLangclawWorkflow(
     finalConclusion,
     finalAnswer,
     agentOutputs,
+    alphaSignal: preProofAlphaSignal,
+  });
+  const proofWithCompute = {
+    ...proof,
+    compute: computeSynthesis.compute,
+  };
+  const alphaSignal = buildAlphaSignal({
+    chainContext,
+    errors,
+    generatedAt,
+    onChain: onChainEnrichment.payload,
+    providerTrace,
+    proof: proofWithCompute,
+    report,
+    signals,
+    sources,
+    topic,
   });
 
   updateAgentOutputsWithProof(agentOutputs, proof);
@@ -559,14 +588,9 @@ export async function runLangclawWorkflow(
     finalAnswer,
     finalAnswerMeta,
     agentOutputs,
-    proof: {
-      ...proof,
-      compute: computeSynthesis.compute,
-    },
-    zeroG: {
-      ...proof,
-      compute: computeSynthesis.compute,
-    },
+    proof: proofWithCompute,
+    zeroG: proofWithCompute,
+    alphaSignal,
   };
 }
 

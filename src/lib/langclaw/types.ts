@@ -219,6 +219,53 @@ export type ResearchReport = {
   recommendations: string[];
 };
 
+export type AlphaSignalQualityLabel =
+  | "high"
+  | "medium"
+  | "low"
+  | "insufficient";
+
+export type AlphaFalsePositiveCheck = {
+  id: string;
+  label: string;
+  reason: string;
+  status: "pass" | "warn" | "fail";
+};
+
+export type AlphaSignalQuality = {
+  alertEligible: boolean;
+  evidenceCount: number;
+  falsePositiveChecks: AlphaFalsePositiveCheck[];
+  freshnessMinutes?: number;
+  label: AlphaSignalQualityLabel;
+  reasons: string[];
+  score: number;
+  sourceCoverage: {
+    directWalletFlow: boolean;
+    onchain: boolean;
+    proof: boolean;
+    providerCount: number;
+    social: boolean;
+  };
+};
+
+export type AlphaSignalNotification = {
+  channel: "none" | "telegram";
+  error?: string;
+  reason?: string;
+  sentAt?: string;
+  status: "disabled" | "failed" | "sent" | "skipped";
+};
+
+export type AlphaSignal = {
+  alertEligible: boolean;
+  generatedAt: string;
+  notification?: AlphaSignalNotification;
+  quality: AlphaSignalQuality;
+  schema: "langclaw.alpha-signal.v1";
+  signalType: ResearchReportKind | "unknown";
+};
+
 export type PlannerOutput = {
   summary: string;
   providerPlan: Array<{
@@ -313,6 +360,7 @@ export type DiscoverPayload = {
   agentOutputs?: AgentOutputs;
   proof?: ZeroGProof;
   zeroG?: ZeroGProof;
+  alphaSignal?: AlphaSignal;
   usage?: ModelUsageReceipt;
 };
 

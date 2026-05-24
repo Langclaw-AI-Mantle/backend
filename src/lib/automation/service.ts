@@ -9,7 +9,13 @@ import {
 } from "../server/account-auth";
 import type { Database, Json } from "../supabase/database.types";
 import { writeAutomationRunMemory } from "../memory";
+import {
+  readAlphaSignalFromPayload,
+  withAlphaSignalNotification,
+} from "../langclaw/alpha-quality";
 import { runLangclawWorkflow } from "../langclaw/workflow";
+import type { ResearchReport, ZeroGProof } from "../langclaw/types";
+import type { OnChainToolFinalPayload } from "../onchain-tools/types";
 import {
   refundResearchUsage,
   reserveResearchUsage,
@@ -18,8 +24,10 @@ import {
 } from "../usage";
 import { buildTriggerLabel, computeNextRunAt, getZonedParts } from "./schedule";
 import {
+  buildAlphaSignalNotificationMessage,
   buildAutomationNotificationMessage,
   sendAutomationEmail,
+  sendAlphaSignalNotification,
   sendAutomationRunNotification,
 } from "./notifications";
 import type {
@@ -884,6 +892,26 @@ async function runTaskWithRetries(
         tokenUsage: proof?.compute?.usage,
         topic: prompt,
       });
+      const alphaSignal = readAlphaSignalFromPayload(payload);
+
+      if (alphaSignal) {
+        const settings = await readAutomationSettingsRow(context);
+        const notification = await sendAlphaSignalNotification({
+          alphaSignal,
+          onChain: payload.onChain,
+          project: task.project,
+          proof: proof as ZeroGProof | undefined,
+          report: payload.report,
+          runId: run.id,
+          settings: rowToSettings(settings),
+          taskName: task.name,
+        });
+
+        payload.alphaSignal = withAlphaSignalNotification(
+          alphaSignal,
+          notification
+        );
+      }
 
       return finishRun(context, task, run, {
         result: withAutomationAttemptMetadata(
@@ -1033,6 +1061,35 @@ async function finishRun(
     await sendAutomationRunNotification(notification).catch(() => undefined);
   }
 
+  if (status === "completed") {
+    const alphaSignal = readAlphaSignalFromPayload(result);
+
+    if (
+      alphaSignal?.alertEligible &&
+      alphaSignal.notification?.status === "sent" &&
+      rowToSettings(settings).notificationChannels.includes("in-app")
+    ) {
+      const message = buildAlphaSignalNotificationMessage({
+        alphaSignal,
+        completedAt: finishedRun.completedAt,
+        onChain: readOnChainFromAutomationResult(result),
+        project: task.project,
+        proof: readProofFromAutomationResult(result),
+        report: readReportFromAutomationResult(result),
+        runId: finishedRun.id,
+        taskName: task.name,
+      });
+
+      await writeInAppAlphaSignalNotification(
+        context,
+        task,
+        finishedRun,
+        message,
+        alphaSignal
+      ).catch(() => undefined);
+    }
+  }
+
   return finishedRun;
 }
 
@@ -1087,6 +1144,87 @@ function shouldWriteInAppNotification(settings: AutomationSettings) {
     settings.failureNotification === "in-app" ||
     settings.notificationChannels.includes("in-app")
   );
+}
+
+async function writeInAppAlphaSignalNotification(
+  context: AutomationContext,
+  task: AutomationTaskRow,
+  run: AutomationRun,
+  message: {
+    subject: string;
+    text: string;
+  },
+  alphaSignal: ReturnType<typeof readAlphaSignalFromPayload>
+) {
+  if (!alphaSignal) {
+    return;
+  }
+
+  const { error } = await context.supabase
+    .from("langclaw_automation_notifications")
+    .insert({
+      body: message.text,
+      metadata: {
+        falsePositiveChecks: alphaSignal.quality.falsePositiveChecks,
+        label: alphaSignal.quality.label,
+        score: alphaSignal.quality.score,
+        signalType: alphaSignal.signalType,
+        type: "alpha_signal",
+      },
+      run_id: run.id,
+      task_id: task.id,
+      title: message.subject,
+      wallet_user_id: context.walletUser.id,
+    });
+
+  if (error) {
+    throw new AutomationHttpError(500, error.message);
+  }
+}
+
+function readProofFromAutomationResult(result?: Json): ZeroGProof | undefined {
+  if (!result || typeof result !== "object" || Array.isArray(result)) {
+    return undefined;
+  }
+
+  const record = result as Record<string, unknown>;
+  const proof = record.proof ?? record.zeroG;
+
+  if (!proof || typeof proof !== "object") {
+    return undefined;
+  }
+
+  return proof as ZeroGProof;
+}
+
+function readReportFromAutomationResult(result?: Json): ResearchReport | undefined {
+  if (!result || typeof result !== "object" || Array.isArray(result)) {
+    return undefined;
+  }
+
+  const report = (result as Record<string, unknown>).report;
+
+  if (!report || typeof report !== "object" || Array.isArray(report)) {
+    return undefined;
+  }
+
+  return report as ResearchReport;
+}
+
+function readOnChainFromAutomationResult(
+  result?: Json
+): OnChainToolFinalPayload | undefined {
+  if (!result || typeof result !== "object" || Array.isArray(result)) {
+    return undefined;
+  }
+
+  const onChain = (result as Record<string, unknown>).onChain;
+
+  if (!onChain || typeof onChain !== "object" || Array.isArray(onChain)) {
+    return undefined;
+  }
+
+  return onChain as OnChainToolFinalPayload;
 }
 
 async function createRun(

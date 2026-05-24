@@ -51,7 +51,7 @@ Runs the Mantle Alpha workflow and returns a single JSON payload.
 
 Streams workflow progress before the final payload.
 
-The response includes source cards, provider trace, structured `signals`, an additive `report`, final answer, usage receipt, and proof metadata:
+The response includes source cards, provider trace, structured `signals`, additive `report` and `alphaSignal` objects, final answer, usage receipt, and proof metadata:
 
 ```json
 {
@@ -104,6 +104,32 @@ The response includes source cards, provider trace, structured `signals`, an add
     "recommendations": [
       "Confirm wallet or holder flow with a second on-chain source before escalating the claim."
     ]
+  },
+  "alphaSignal": {
+    "schema": "langclaw.alpha-signal.v1",
+    "signalType": "smart-money",
+    "alertEligible": true,
+    "quality": {
+      "score": 82,
+      "label": "high",
+      "evidenceCount": 4,
+      "sourceCoverage": {
+        "social": true,
+        "onchain": true,
+        "directWalletFlow": true,
+        "proof": true,
+        "providerCount": 3
+      },
+      "falsePositiveChecks": [
+        {
+          "id": "mantle_product_chain",
+          "label": "Mantle product chain",
+          "status": "pass",
+          "reason": "The decision is scoped to Mantle."
+        }
+      ],
+      "reasons": ["Quality score 82/100 is high."]
+    }
   },
   "providerTrace": [
     {

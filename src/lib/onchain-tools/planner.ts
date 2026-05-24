@@ -133,7 +133,7 @@ function selectDomains(text: string, intent: string): OnChainDomain[] {
     domains.add("market_data");
   }
 
-  if (/\b(wallet|portfolio|balance|address)\b/i.test(normalized)) {
+  if (hasWalletDomainIntent(normalized)) {
     domains.add("wallet_portfolio");
     domains.add("address_approval_risk");
   }
@@ -450,16 +450,16 @@ function reasonFor(command: OnChainCommand, intent: string) {
 }
 
 function classifyIntent(text: string) {
-  if (/\b(wallet|portfolio|balance|address|pnl)\b/i.test(text)) {
-    return "wallet";
-  }
-
   if (
     /\b(smart[-\s]money|whale|accumulat\w*|holder(?:\s+flow)?|netflow|token flow)\b/i.test(
       text
     )
   ) {
     return "smart-money";
+  }
+
+  if (/\b(wallet|portfolio|balance|address|pnl)\b/i.test(text)) {
+    return "wallet";
   }
 
   if (/\b(tvl|yield|defi|stablecoin|protocol)\b/i.test(text)) {
@@ -479,6 +479,17 @@ function classifyIntent(text: string) {
   }
 
   return "token-discovery";
+}
+
+function hasWalletDomainIntent(text: string) {
+  const addressIntent =
+    /\baddress\b/i.test(text) && !/\btoken[-\s]?address\b/i.test(text);
+
+  return (
+    /\b(portfolio|balance)\b/i.test(text) ||
+    addressIntent ||
+    /\bwallet\b(?![-\s]?flow\b)/i.test(text)
+  );
 }
 
 function isPairFocused(text: string) {

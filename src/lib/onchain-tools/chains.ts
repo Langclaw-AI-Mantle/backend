@@ -251,24 +251,57 @@ function escapeRegExp(value: string) {
 
 function detectExplicitChain(text: string) {
   const normalized = text.toLowerCase();
+  const candidates: Array<{ id: string; index: number; term: string }> = [];
 
   for (const [key, value] of Object.entries(chains)) {
-    if (new RegExp(`\\b${escapeRegExp(key)}\\b`, "i").test(normalized)) {
-      return resolveChain(key);
+    const keyMatch = matchChainTerm(normalized, key);
+
+    if (keyMatch && !isNegatedChainMention(normalized, keyMatch.index)) {
+      candidates.push({
+        id: key,
+        index: keyMatch.index,
+        term: key,
+      });
     }
   }
 
   for (const [key, value] of Object.entries(chains)) {
-    if (
-      value.aliases.some((alias) =>
-        new RegExp(`\\b${escapeRegExp(alias)}\\b`, "i").test(normalized)
-      )
-    ) {
-      return resolveChain(key);
+    for (const alias of value.aliases) {
+      const aliasMatch = matchChainTerm(normalized, alias);
+
+      if (aliasMatch && !isNegatedChainMention(normalized, aliasMatch.index)) {
+        candidates.push({
+          id: key,
+          index: aliasMatch.index,
+          term: alias,
+        });
+      }
     }
   }
 
-  return undefined;
+  const earliest = candidates.sort((left, right) => {
+    if (left.index !== right.index) {
+      return left.index - right.index;
+    }
+
+    return right.term.length - left.term.length;
+  })[0];
+
+  return earliest ? resolveChain(earliest.id) : undefined;
+}
+
+function matchChainTerm(text: string, term: string) {
+  const match = new RegExp(`\\b${escapeRegExp(term)}\\b`, "i").exec(text);
+
+  return match ? { index: match.index } : undefined;
+}
+
+function isNegatedChainMention(text: string, index: number) {
+  const lookback = text.slice(Math.max(0, index - 42), index);
+
+  return /(?:\bdo\s+not|\bdon't|\bdont|\bnever|\bwithout|\bexclude|\bexcluding|\bavoid|\bignore|\bnot|\bno)\s+(?:use\s+|using\s+|include\s+|including\s+|route\s+to\s+|fallback\s+to\s+|from\s+|on\s+|the\s+)?$/i.test(
+    lookback
+  );
 }
 
 function detectPotentialUnsupportedChain(

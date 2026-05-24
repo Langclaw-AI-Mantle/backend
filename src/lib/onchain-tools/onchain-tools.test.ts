@@ -87,6 +87,15 @@ test("prompt chain detection prefers explicit chain over UI fallback", () => {
   assert.equal(fallbackCelo.id, "celo");
 });
 
+test("prompt chain detection ignores negated chain mentions", () => {
+  const detected = detectChainWithFallback(
+    "Find smart-money accumulation across Mantle chain only. Use Mantle wallet-flow rows. Do not use Ethereum MNT or external token fallback.",
+    "mantle"
+  );
+
+  assert.equal(detected.id, "mantle");
+});
+
 test("on-chain guard allows explicitly supported analysis networks", () => {
   assert.equal(
     detectUnsupportedOnChainChain("Find trending tokens on Base"),
@@ -286,6 +295,35 @@ test("planner routes configured Mantle smart-money prompts through Surf first", 
         !plan.commands.some(
           (item) => item.command.id === "smart_money.nansen_smart_money_netflow"
         )
+      );
+    }
+  );
+});
+
+test("planner preserves Mantle smart-money scope with negated Ethereum fallback text", async () => {
+  await withEnv(
+    {
+      SURF_API_KEY: "surf-test-key",
+      SURF_ENABLED: "true",
+    },
+    async () => {
+      const plan = planOnChainTools({
+        chain: "mantle",
+        context: [],
+        message:
+          "Find smart-money accumulation across Mantle chain only. Use Mantle on-chain wallet-flow rows only. Do not use Ethereum MNT, token-address fallback, or external low-confidence token context.",
+      });
+
+      assert.equal(plan.chain, "mantle");
+      assert.equal(plan.intent, "smart-money");
+      assert.equal(plan.analysisSource, "prompt");
+      assert.ok(
+        !plan.commands.some(
+          (item) => item.command.domain === "wallet_portfolio"
+        )
+      );
+      assert.ok(
+        plan.commands.some((item) => item.command.domain === "smart_money")
       );
     }
   );
