@@ -48,6 +48,7 @@ Defined in [`src/server.ts`](src/server.ts):
 | API keys | `POST /api/api-keys` |
 | Usage | `POST /api/usage/balance`, `quote`, `deposit/verify`, `withdraw/request` |
 | Automation | `POST /api/automation/*`, webhooks, Telegram |
+| Proof | `POST /api/proofs/decisions`, `POST /api/proofs/readiness` |
 
 Full request/response shapes: [`docs/API_REFERENCE.md`](docs/API_REFERENCE.md).
 
@@ -182,6 +183,7 @@ npm run dev          # tsx watch src/server.ts
 npm run build        # tsc → dist/
 npm start            # node dist/server.js
 npm run check:eligibility
+npm run check:mantle-proof
 npm test             # node --test
 npm run deploy:registry
 npm run deploy:trading-journal

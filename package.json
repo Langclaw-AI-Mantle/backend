@@ -8,6 +8,7 @@
     "build": "npm run clean && tsc -p tsconfig.json",
     "start": "node dist/server.js",
     "check:eligibility": "node scripts/check-celo-eligibility.mjs",
+    "check:mantle-proof": "node --import tsx src/scripts/check-mantle-proof-readiness.ts --chain mantle",
     "deploy:registry": "node scripts/deploy-langclaw-registry.mjs",
     "deploy:trading-journal": "node scripts/deploy-langclaw-trading-journal.mjs --write-env",
     "deploy:usage-vault": "node scripts/deploy-langclaw-usage-vault.mjs --write-env",

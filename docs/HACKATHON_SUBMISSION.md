@@ -24,6 +24,47 @@ Langclaw is a Mantle-first AI intelligence and strategy agent that analyzes smar
 | Strategy alpha | Mantle Liquidity Momentum Strategy with Dune historical rows, equity curve, trade table, win rate, drawdown, deterministic paper orders, and journal proof status |
 | Visualization quality | Mantle Intelligence UI cards, Strategy Lab charts/tables, provider evidence details, source-gap display, on-chain proof panel, Proof Center registry and strategy tables |
 
+## AI Alpha & Data Criteria
+
+Langclaw should be submitted as an **AI Alpha & Data** project first. Strategy Lab is a supporting proof module, not the core claim.
+
+| Criteria | Langclaw evidence | Status |
+| --- | --- | --- |
+| Smart money tracking agent | Research mode routes smart-money prompts to Surf, Dune, and Nansen. Reports show candidate wallets, DEX accumulation rows, CEX withdrawal signals, source gaps, and watchlist recommendations. | Ready |
+| Mantle ecosystem protocol data dashboard | Mantle protocol and yield momentum prompts use DeFiLlama protocol and pool data, then render ranked entities, metrics, and source-backed report sections. | Ready |
+| AI-driven market sentiment analysis | Surf, Elfa, Brave/Tavily, GitHub, and social/public discovery feed the social and combined signal sections. The demo should describe this as market narrative and sentiment context, not as standalone sentiment trading execution. | Ready for demo |
+| Automated arbitrage / market-making strategies | Not a primary claim. Strategy Lab backtests and opens paper-trading proof only. Langclaw does not execute live arbitrage or market-making trades. | Supporting only |
+| Use Mantle on-chain data as a core data source | Mantle chain `5000`, Mantle DEX pairs, Mantle provider routes, MNT usage billing, and Mantle proof contracts are core to the workflow. | Ready |
+| Deploy on Mantle Network | `LangclawRegistry`, `LangclawTradingJournal`, `LangclawUsageVault`, and ERC-8004 agent identity are deployed or registered on Mantle. | Ready |
+
+## Signal Quality Metric
+
+Langclaw does not treat every large flow as alpha. It scores signal quality from source depth, provider status, row-level evidence, and missing checks.
+
+| Confidence | Meaning | Example evidence |
+| --- | --- | --- |
+| High | Multiple sources agree and wallet evidence includes labels plus follow-up checks. | Row-level wallet flow, wallet label, retention check, sell-pressure check, source URL, and second-source validation. |
+| Medium | Row-level on-chain data exists, but identity or follow-up evidence is incomplete. | DEX accumulation rows, CEX withdrawal rows, token amount, USD value, trade count, window, provider status, and source URL. |
+| Low | The run has only narrative context, weak provider coverage, or fallback synthesis. | No wallet-flow rows, partial social signal, failed provider route, or unavailable label and retention checks. |
+
+The report exposes this through the `Confidence` badge, evidence tables, provider diagnostics, limits, checks performed, checks unavailable, and conclusion sections.
+
+## False Positive Handling
+
+Langclaw avoids overclaiming smart-money identity.
+
+- DEX-only rows are treated as **large-flow watchlist** entries, not confirmed smart-money wallets.
+- Confirmed smart money requires wallet labels plus retention or sell-pressure checks.
+- CEX deposits are treated as possible sell-pressure signals, not accumulation candidates.
+- External token activity is marked as low-confidence context when it is not native to the requested chain.
+- Empty provider rows do not create fake tables.
+
+## Alert Channel Positioning
+
+The main product surface is the web dashboard. Telegram is the alert and automation channel for saved signals and monitor updates.
+
+Do not claim Discord support unless a Discord integration is added. For this submission, describe Telegram as the notification path and Proof Center as the verification path.
+
 ## Deployed Proof Layer
 
 | Item | Value |
@@ -119,12 +160,23 @@ Expected result: Strategy metrics, equity curve, trade log, latest AI signal, Du
 5. The registry record is linked to ERC-8004 agent ID `94`, giving the agent an on-chain performance trail.
 6. Strong signals can be saved to Alpha Watchlist for follow-up, while Proof Center shows the verifiable registry history and Strategy Proofs from the trading journal.
 
+## Demo Evidence Checklist
+
+- Run the smart-money prompt and show the report title, confidence, source count, provider status, candidate table, and limits.
+- Run the liquidity-anomaly prompt and show Mantle pair evidence, risk note, and decision proof.
+- Run the protocol momentum prompt and show Mantle TVL/yield ranking.
+- Save one strong signal to Alpha Watchlist.
+- Open Proof Center and show `agentId`, `signalType`, decision hash, evidence URI, and Mantle transaction link.
+- Show Telegram alert settings only as the notification channel, not as the primary research UI.
+- Mention focused verification: smart-money, liquidity anomaly, provider routing, proof workflow, and research streaming tests passed locally.
+
 ## Local Verification
 
 Backend:
 
 ```bash
 cd backend
+npm run check:mantle-proof
 npm run typecheck
 npm test
 ```

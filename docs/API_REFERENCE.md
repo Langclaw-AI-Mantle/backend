@@ -148,6 +148,48 @@ The response includes source cards, provider trace, structured `signals`, an add
 
 `providerTrace` is additive metadata that explains which providers succeeded, failed, or were skipped. Premium Surf/Elfa/Nansen traces appear only for Mantle in this phase. No request flag is required; the shared research workflow now attempts combined discovery plus on-chain enrichment by default and degrades honestly when a provider is out of scope, disabled, or fails upstream.
 
+## Proof
+
+`POST /api/proofs/readiness`
+
+Checks whether the selected product chain can record and read Langclaw proof records before a demo.
+
+Request:
+
+```json
+{
+  "chain": "mantle"
+}
+```
+
+Response:
+
+```json
+{
+  "chain": "mantle",
+  "chainId": 5000,
+  "status": "ready",
+  "ready": true,
+  "checks": [
+    {
+      "id": "registry-readable",
+      "status": "pass",
+      "summary": "LangclawRegistry is readable. nextDecisionId is 3."
+    }
+  ]
+}
+```
+
+Run the same check from the backend folder:
+
+```bash
+npm run check:mantle-proof
+```
+
+`POST /api/proofs/decisions`
+
+Returns the latest recorded `LangclawRegistry` decisions for Proof Center.
+
 ## Strategy Lab
 
 `POST /api/strategy/backtest`
