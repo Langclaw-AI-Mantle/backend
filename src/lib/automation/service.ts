@@ -128,6 +128,7 @@ export async function createAutomationTask(
 ) {
   const context = await requireAutomationContext(authInput);
   const settings = await readAutomationSettingsForContext(context);
+  requireTelegramLinkedSettings(settings);
   const task = normalizeTaskInput(input, {
     requireName: true,
     settings,
@@ -197,6 +198,11 @@ export async function updateAutomationTask(
     settings,
   });
   const status = patch.status ?? existing.status;
+
+  if (status === "active") {
+    requireTelegramLinkedSettings(settings);
+  }
+
   const triggerType = patch.triggerType ?? existing.trigger_type;
   const scheduleFrequency =
     patch.scheduleFrequency ?? existing.schedule_frequency ?? "daily";
@@ -295,6 +301,11 @@ export async function setAllAutomationStatus(
   status: Extract<AutomationTaskStatus, "active" | "paused">
 ) {
   const context = await requireAutomationContext(authInput);
+
+  if (status === "active") {
+    requireTelegramLinkedSettings(await readAutomationSettingsForContext(context));
+  }
+
   const tasks = await readAutomationTaskRows(context);
   const updates = await Promise.all(
     tasks
@@ -1264,6 +1275,15 @@ async function readGuardrailDecision(
   const settings = await readAutomationSettingsRow(context);
   const account = await readUsageAccount(context);
   const now = new Date();
+
+  if (!settings.telegram_verified || !settings.telegram_chat_id?.trim()) {
+    return {
+      allowed: false,
+      pauseTask: false,
+      reason: "Telegram connection is required.",
+    };
+  }
+
   const dailyTotal = await readUsageTotalSince(
     context,
     startOfLocalDay(now, task.timezone)
@@ -1327,6 +1347,12 @@ async function readGuardrailDecision(
 
 async function readAutomationSettingsForContext(context: AutomationContext) {
   return rowToSettings(await readAutomationSettingsRow(context));
+}
+
+function requireTelegramLinkedSettings(settings: AutomationSettings) {
+  if (!settings.telegramVerified || !settings.telegramChatId?.trim()) {
+    throw new AutomationHttpError(403, "Telegram connection is required.");
+  }
 }
 
 async function readAutomationSettingsRow(context: AutomationContext) {
@@ -1398,6 +1424,10 @@ async function updateTaskStatus(
   task: AutomationTaskRow,
   status: Extract<AutomationTaskStatus, "active" | "paused">
 ) {
+  if (status === "active") {
+    requireTelegramLinkedSettings(await readAutomationSettingsForContext(context));
+  }
+
   const nextRunAt =
     status === "active" &&
     task.trigger_type === "schedule" &&

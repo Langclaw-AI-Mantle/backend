@@ -63,6 +63,25 @@ function supabaseWalletResponse() {
   });
 }
 
+function supabaseTelegramSettingsResponse(linked = true) {
+  return jsonResponse({
+    telegram_chat_id: linked ? "5705926766" : null,
+    telegram_linked_at: linked ? "2026-05-24T12:00:00.000Z" : null,
+    telegram_username: linked ? "test_user" : null,
+    telegram_verified: linked,
+  });
+}
+
+function supabaseAccountResponse(url: string, telegramLinked = true) {
+  const parsed = new URL(url);
+
+  if (parsed.pathname.includes("/langclaw_automation_settings")) {
+    return supabaseTelegramSettingsResponse(telegramLinked);
+  }
+
+  return supabaseWalletResponse();
+}
+
 test("direct chat rejects attachments until multimodal contract exists", async () => {
   const response = await handleChatStream(
     new Request("http://localhost/api/chat/stream", {
@@ -144,6 +163,38 @@ test("legacy on-chain mode now aliases to research and still requires wallet aut
   assert.match(payload.error, /required/);
 });
 
+test("direct chat requires linked Telegram after wallet auth", async () => {
+  const restore = mockFetch((url) =>
+    isSupabaseRequest(url)
+      ? supabaseAccountResponse(url, false)
+      : jsonResponse({ ok: true })
+  );
+
+  try {
+    await withEnv(authEnv, async () => {
+      const response = await handleChatStream(
+        new Request("http://localhost/api/chat/stream", {
+          body: JSON.stringify({
+            message: "halo",
+            wallet: await buildTestWallet(),
+          }),
+          method: "POST",
+        })
+      );
+      const payload = (await response.json()) as {
+        code?: string;
+        error: string;
+      };
+
+      assert.equal(response.status, 403);
+      assert.equal(payload.code, "telegram_link_required");
+      assert.match(payload.error, /Telegram connection is required/);
+    });
+  } finally {
+    restore();
+  }
+});
+
 test("legacy on-chain mode aliases to research and returns a hybrid result payload", async () => {
   const restore = mockFetch((url) => {
     const parsed = new URL(url);
@@ -171,7 +222,7 @@ test("legacy on-chain mode aliases to research and returns a hybrid result paylo
         ]);
       }
 
-      return supabaseWalletResponse();
+      return supabaseAccountResponse(url);
     }
 
     if (parsed.hostname === "www.hackquest.io") {
@@ -251,7 +302,7 @@ test("legacy on-chain mode aliases to research and returns a hybrid result paylo
 test("direct chat honors supported body.model and returns metadata", async () => {
   const restore = mockFetch((url) => {
     if (isSupabaseRequest(url)) {
-      return supabaseWalletResponse();
+      return supabaseAccountResponse(url);
     }
 
     return jsonResponse({ ok: true });
@@ -303,7 +354,7 @@ test("direct chat streams safe reasoning progress while OpenAI answer streams", 
     const parsed = new URL(url);
 
     if (isSupabaseRequest(url)) {
-      return supabaseWalletResponse();
+      return supabaseAccountResponse(url);
     }
 
     if (parsed.hostname === "api.openai.test") {
@@ -409,7 +460,7 @@ test("direct chat streams safe reasoning progress while OpenAI answer streams", 
 
 test("direct chat uses configured OpenAI default model when none is requested", async () => {
   const restore = mockFetch((url) =>
-    isSupabaseRequest(url) ? supabaseWalletResponse() : jsonResponse({ data: [] })
+    isSupabaseRequest(url) ? supabaseAccountResponse(url) : jsonResponse({ data: [] })
   );
 
   try {
@@ -498,7 +549,7 @@ test("research mode streams on-chain enrichment events and nests the result payl
         ]);
       }
 
-      return supabaseWalletResponse();
+      return supabaseAccountResponse(url);
     }
 
     if (parsed.hostname === "api.dexscreener.com") {

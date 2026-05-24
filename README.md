@@ -52,6 +52,8 @@ Defined in [`src/server.ts`](src/server.ts):
 
 Full request/response shapes: [`docs/API_REFERENCE.md`](docs/API_REFERENCE.md).
 
+Chat and research routes require both a wallet session and a linked Telegram chat. Users can link Telegram from automation notification settings before running the agent.
+
 ## Langclaw + OpenClaw
 
 OpenClaw runs reasoning steps (`openclaw agent --json`); discovery and provider calls stay in TypeScript.

@@ -3,6 +3,7 @@ import { readProductChainId, resolveProductChain } from "../lib/chain-config";
 import {
   accountAuthErrorResponse,
   requireAccountAuth,
+  requireTelegramLinkedAccount,
 } from "../lib/server/account-auth";
 import type { WalletAuthInput } from "../lib/server/wallet-auth";
 import { runLangclawWorkflow } from "../lib/langclaw/workflow";
@@ -86,6 +87,14 @@ export async function handleChatStream(request: Request) {
 
   if ("error" in account) {
     return accountAuthErrorResponse(account.error);
+  }
+
+  const telegram = await requireTelegramLinkedAccount(account).catch((error) => ({
+    error,
+  }));
+
+  if ("error" in telegram) {
+    return accountAuthErrorResponse(telegram.error);
   }
 
   let reservation: UsageReservation | undefined;

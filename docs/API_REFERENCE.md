@@ -14,6 +14,8 @@ Returns `{ "ok": true, "service": "langclaw-backend" }`.
 
 Streams newline-delimited JSON. Direct chat uses OpenAI Responses API. Research mode runs the Langclaw workflow and can record selected-chain decision proof. The streamed `result.payload` now includes a stable `signals` object with `social`, `onchain`, and `combined` summaries, plus an additive `report` object for native report rendering.
 
+Requires a valid wallet session or API key for that wallet user, plus a linked Telegram chat in automation notification settings.
+
 Request:
 
 ```json
@@ -50,6 +52,8 @@ Runs the Mantle Alpha workflow and returns a single JSON payload.
 `POST /api/discover/stream`
 
 Streams workflow progress before the final payload.
+
+Both research routes require a valid wallet session or API key for that wallet user, plus a linked Telegram chat in automation notification settings.
 
 The response includes source cards, provider trace, structured `signals`, additive `report` and `alphaSignal` objects, final answer, usage receipt, and proof metadata:
 
@@ -370,4 +374,5 @@ Premium provider routing is Mantle-only in v1. Celo and other non-Mantle flows c
 - `400`: malformed request.
 - `401`: wallet auth missing or expired.
 - `402`: insufficient prepaid balance.
+- `403`: Telegram chat is not linked.
 - `500`: backend/provider failure.
