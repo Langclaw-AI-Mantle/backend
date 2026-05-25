@@ -1,25 +1,25 @@
 # Langclaw Mantle Hackathon Blueprint
 
-Langclaw is repositioned for the Mantle Turing Test Hackathon as **Mantle Alpha Sentinel**.
+Langclaw is positioned for the Mantle Turing Test Hackathon as **Mantle Alpha Sentinel**.
 
-## One Sentence
+## One sentence
 
-Langclaw is a verifiable Mantle on-chain intelligence agent that monitors smart money, liquidity anomalies, protocol momentum, and risk signals, then records evidence-backed AI decisions on Mantle.
+Langclaw is a verifiable Mantle on-chain intelligence agent that monitors smart money, liquidity anomalies, protocol momentum, and risk signals, then records evidence-backed AI decisions on Mantle. Strategy Lab adds Dune-backed backtests and paper-trade proofs without live-funds execution.
 
-## Track Fit
+## Track fit
 
 Primary track: **AI Alpha & Data / Data & Analytics**.
 
-Why this track:
+Supporting module: **Strategy Lab** (AI Trading & Strategy score booster via `LangclawTradingJournal`, not live trading).
+
+Why AI Alpha & Data fits:
 
 - Mantle on-chain data is the core input.
 - The output is an AI-generated alpha brief, not an autonomous trade claim.
-- The product can show insight value through source-backed findings and visual tool output.
-- Agent decisions are verifiable through `LangclawRegistry` records on Mantle.
+- Insight value comes from source-backed findings, structured reports, and provider-gap honesty.
+- Agent decisions are verifiable through `LangclawRegistry` on Mantle.
 
-Trading execution is intentionally out of MVP scope until backtesting, live execution, Bybit integration, and on-chain trade records are added.
-
-## Product Positioning
+## Product positioning
 
 Langclaw should be framed as:
 
@@ -30,54 +30,54 @@ Mantle Alpha Sentinel: an AI agent for verifiable on-chain alpha, smart-money mo
 It should not be framed as:
 
 ```text
-An autonomous trading bot.
+An autonomous trading bot or live-funds executor.
 ```
 
-The user asks a Mantle alpha question. Langclaw runs source-backed tools, explains the signal, lists evidence and source gaps, writes a risk-aware watch action, and prepares or records the agent decision proof.
+The user asks a Mantle alpha question in **Research** mode. Langclaw runs discovery, on-chain enrichment, signal synthesis, structured reporting, and optional registry proof. Strategy Lab is a separate `/strategy` surface for backtests and paper trades.
 
-## Core Demo Prompts
+## Core demo prompts
 
 - `Find smart-money accumulation on Mantle`
 - `Detect liquidity anomalies on Mantle DEX pairs`
 - `Rank Mantle protocols by TVL and yield momentum`
 
-## Agent Workflow
+## Agent workflow
 
 ```text
-User prompt
-  -> Mantle chain resolver
+User prompt (Research mode)
+  -> Runtime probe (OpenClaw CLI)
   -> Planner
-  -> Mantle data tools
-     -> Dune Mantle query
-     -> DEX Screener Mantle pairs
-     -> DeFiLlama Mantle TVL / yields
-     -> Alchemy / Etherscan-style wallet and token reads when configured
-     -> GoPlus risk checks when configured
-  -> Signal synthesis
+  -> Discovery (TypeScript: Surf, Elfa, Brave/Tavily/GitHub/HackQuest)
+  -> Source normalizer (TypeScript)
+  -> Trend scorer
   -> Evidence packager
   -> Verifier
-  -> Final Mantle Alpha brief
-  -> LangclawRegistry agent decision record on Mantle
+  -> On-chain enrichment (TypeScript: Surf, Dune, Nansen, GeckoTerminal, CoinGecko, DEX Screener, DeFiLlama, Alchemy, Etherscan, GoPlus)
+  -> signals + report + alphaSignal + providerTrace
+  -> Final conclusion (OpenClaw or OpenAI fallback; guardrails append caveats)
+  -> Evidence bundle storage
+  -> LangclawRegistry agent decision record on product chain
 ```
 
-## Output Shape
+Direct **Chat** mode skips the workflow and uses OpenAI Responses only.
 
-Each Mantle Intelligence run should surface:
+## Output shape
 
-- Signal
-- Evidence
-- Confidence
-- Risk note
-- Recommended watch/action
-- Provider source gaps
-- Evidence URI
-- Decision hash
-- Mantle transaction link when configured
-- ERC-8004-compatible agent id when configured
+Each Research run should surface:
 
-## Proof Contract
+- `signals.social`, `signals.onchain`, `signals.combined`
+- Structured `report` (entities, tables, sections, caveats, recommendations)
+- `alphaSignal` with quality score and `alertEligible`
+- `providerTrace` per provider
+- Final answer (analysis-only; no proof claims in answer body)
+- Proof panel: evidence URI, decision hash, tx link when anchored
+- ERC-8004 `agentId` when configured
 
-`LangclawRegistry` records:
+## Proof contracts
+
+### LangclawRegistry
+
+Records agent decisions:
 
 ```solidity
 struct AgentDecision {
@@ -91,44 +91,45 @@ struct AgentDecision {
 }
 ```
 
-The primary event is:
+Mantle mainnet: `0xe69755e4249c4978c39fbe847ca9674ce7af3505`
 
-```solidity
-event AgentDecisionRecorded(
-    uint256 indexed decisionId,
-    uint256 indexed agentId,
-    address indexed recorder,
-    bytes32 decisionHash,
-    string runId,
-    string evidenceUri,
-    string signalType
-);
-```
+### LangclawTradingJournal
 
-## UI Scope
+Records Strategy Lab backtests and paper trades. Mantle mainnet: `0xe96e9b76af8c8f32bfa2235d647186826d92fb7d`
 
-Keep the existing chat layout. Adjust only:
+### LangclawUsageVault
 
-- Suggested prompts
-- Mode labels: `Mantle Alpha`, `Mantle Intel`
-- Proof copy: `Agent Decision Proof`
-- Badges: `Mantle`, `AI Alpha`, `Evidence-backed`, `On-chain recorded`
-- Automation copy for smart-money and anomaly alerts
+Optional MNT billing. Mantle mainnet: `0x7e93Ef361e7b54297cF963977bA829E47E59e8E1`
 
-## Scoring Narrative
+## UI scope
 
-- **Data source quality:** Mantle chain, Dune Mantle queries, DEX Screener Mantle pairs, DeFiLlama Mantle TVL/yields, wallet/token reads.
-- **AI analysis depth:** signal synthesis, confidence, risk note, source gaps, recommended watch/action.
-- **Technical completeness:** backend workflow, frontend chat, on-chain tools, automation, proof contract.
-- **Insight value:** smart-money tracking, liquidity anomaly detection, protocol momentum ranking.
-- **Sustainability:** scheduled monitors and Telegram/in-app alert channels.
-- **Verifiability:** every decision has a hash, evidence URI, agent id, recorder, timestamp, and optional Mantle tx.
+Keep the chat layout. Current mode labels:
 
-## MVP Acceptance
+- **Chat** — direct OpenAI chat
+- **Research** — full Langclaw workflow (legacy `onchain` aliases here)
+
+Frontend routes: `/chat`, `/watchlist`, `/strategy`, `/proofs`, `/usage`, `/task`, `/key`, `/memory`, `/settings`
+
+Proof copy: **Agent Decision Proof**, Proof Center at `/proofs`
+
+Badges: Mantle, AI Alpha, Evidence-backed, On-chain recorded
+
+Client chat model is fixed to **GPT-5.4 nano** (`frontend/lib/chat-model.ts`). Backend synthesis may use `OPENAI_AGENT_MODEL` independently.
+
+## Scoring narrative
+
+- **Data source quality:** Mantle chain, Surf/Elfa/Nansen (Mantle-scoped), Dune, DEX Screener, DeFiLlama, wallet/token reads.
+- **AI analysis depth:** signals, structured report, confidence, caveats, recommended watch/action.
+- **Technical completeness:** 11-step workflow, frontend Research UI, Strategy Lab, automation, proof contracts.
+- **Insight value:** smart-money tracking, liquidity anomaly detection, protocol momentum ranking, Alpha Watchlist.
+- **Sustainability:** scheduled monitors, Telegram alpha alerts, optional usage vault.
+- **Verifiability:** decision hash, evidence URI, agent id, recorder, timestamp, Mantle tx when anchored.
+
+## MVP acceptance
 
 - Prompt mentioning Mantle resolves to chain ID `5000`.
-- Mantle Intelligence mode returns signal/evidence/confidence/risk/action bullets.
-- Provider failures are shown as source gaps.
-- `LangclawRegistry` records and returns an agent decision.
-- Frontend loads with Mantle-first wallet config and updated labels.
-- Docs explain AI Alpha & Data positioning without claiming live trade execution.
+- Research mode returns signals, report, final answer, and proof metadata.
+- Provider failures appear in `providerTrace` and report caveats, not hidden.
+- `LangclawRegistry` records and returns agent decisions when configured.
+- Frontend loads with Mantle-only wallet config and Chat/Research modes.
+- Docs describe AI Alpha & Data first; Strategy Lab as supporting proof module.

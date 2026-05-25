@@ -41,14 +41,16 @@ Defined in [`src/server.ts`](src/server.ts):
 | Area | Endpoints |
 | ---- | --------- |
 | Health | `GET /health` |
+| Wallet auth | `POST /api/wallet/challenge`, `POST /api/wallet/session` |
 | Research | `POST /api/discover`, `POST /api/discover/stream` |
-| Strategy Lab | `POST /api/strategy/backtest`, `scan-pairs`, `paper-trade`, `runs` |
 | Chat | `POST /api/chat/stream`, `POST /api/chat/sessions` |
+| Watchlist | `POST /api/watchlist` |
+| Strategy Lab | `POST /api/strategy/backtest`, `scan-pairs`, `paper-trade`, `runs` |
 | Memory | `POST /api/memory`, `POST /api/memory/settings` |
 | API keys | `POST /api/api-keys` |
-| Usage | `POST /api/usage/balance`, `quote`, `deposit/verify`, `withdraw/request` |
-| Automation | `POST /api/automation/*`, webhooks, Telegram |
-| Proof | `POST /api/proofs/decisions`, `POST /api/proofs/readiness` |
+| Usage | `POST /api/usage/balance`, `quote`, `vault`, `deposit/verify`, `withdraw/request` |
+| Proof | `POST /api/proofs/readiness`, `POST /api/proofs/decisions` |
+| Automation | `POST /api/automation/settings`, `tasks`, `runs`, `notifications`, `telegram/webhook`, `webhooks/{slug}` |
 
 Full request/response shapes: [`docs/API_REFERENCE.md`](docs/API_REFERENCE.md).
 
@@ -56,22 +58,25 @@ Chat and research routes require both a wallet session and a linked Telegram cha
 
 ## Langclaw + OpenClaw
 
-OpenClaw runs reasoning steps (`openclaw agent --json`); discovery and provider calls stay in TypeScript.
+OpenClaw runs reasoning steps (`openclaw agent --json`); discovery, source normalization, on-chain enrichment, and provider calls stay in TypeScript on the backend server.
 
 ```text
 runLangclawWorkflow(topic)
-  → Planner (OpenClaw)
+  → Runtime probe (OpenClaw CLI availability)
+  → Planner (OpenClaw or deterministic fallback)
   → Discovery (TS: Surf, Elfa, X/Brave, GitHub, Tavily, HackQuest)
-  → Combined signals (TS: social, onchain, combined summaries)
-  → Structured report (TS: deterministic report core with ranked tables when real metrics exist)
   → Source normalizer (TS)
-  → On-chain enrichment (TS: Surf, Dune, Nansen, DEX Screener, DeFiLlama, Alchemy, Etherscan, GoPlus by scope)
-  → Mantle alpha scorer (OpenClaw)
-  → Evidence packager (OpenClaw)
-  → Verifier (OpenClaw)
-  → Final conclusion (OpenAI Responses → deterministic fallback)
-  → Evidence bundle → LangclawRegistry agent decision proof on Mantle
+  → Trend scorer (OpenClaw or fallback)
+  → Evidence packager (OpenClaw or fallback)
+  → Verifier (OpenClaw or fallback)
+  → On-chain enrichment (TS: Surf, Dune, Nansen, CoinGecko, GeckoTerminal, DEX Screener, DeFiLlama, Alchemy, Etherscan, GoPlus by scope)
+  → Combined signals + structured report + alphaSignal (TS)
+  → Final conclusion (OpenClaw when OPENCLAW_AI_SYNTHESIS=true, else OpenAI Responses → deterministic fallback)
+  → Evidence bundle storage
+  → LangclawRegistry agent decision proof on selected product chain
 ```
+
+`POST /api/chat/stream` with `toolMode: research` runs the same workflow. Legacy `toolMode: onchain` is normalized to `research`.
 
 Skills: [`openclaw/skills/`](openclaw/skills/). See [`openclaw/README.md`](openclaw/README.md).
 

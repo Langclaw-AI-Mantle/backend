@@ -9,6 +9,7 @@ Rank evidence-backed patterns from discovered and on-chain signals.
 - Normalized source cards
 - Provider errors
 - Topic text
+- On-chain enrichment summary when the Research workflow has already run provider tools
 
 ## Scoring Factors
 

@@ -22,7 +22,7 @@ Request:
 {
   "message": "Find smart-money accumulation on Mantle",
   "toolMode": "research",
-  "model": "gpt-5-mini",
+  "model": "gpt-5.4-nano",
   "wallet": {
     "address": "0x...",
     "sessionToken": "..."
@@ -34,7 +34,8 @@ Important stream event types:
 
 - `direct_delta`, `direct`: direct OpenAI chat.
 - `progress`, `result`: research workflow.
-- `tool_plan`, `tool_call`, `tool_result`, `tool_final`: Mantle intelligence tools.
+- `tool_plan`, `tool_call`, `tool_result`: on-chain enrichment inside Research (no standalone `tool_final` in the normal path).
+- Legacy `toolMode: "onchain"` is normalized to `research`.
 - `error`: request failure.
 
 For `tool_result` and `tool_final.payload.tools`, each tool result can now include additive metadata:
@@ -158,7 +159,7 @@ The response includes source cards, provider trace, structured `signals`, additi
     "compute": {
       "status": "used",
       "provider": "OpenAI",
-      "model": "gpt-5-mini"
+      "model": "gpt-5.4-nano"
     }
   }
 }
@@ -292,6 +293,10 @@ Reads the prepaid selected-chain ledger balance for `body.chain` (`mantle` or `c
 
 Returns estimated OpenAI usage pricing in internal wei-denominated units.
 
+`POST /api/usage/vault`
+
+Returns the configured `LangclawUsageVault` address and metadata for the requested `body.chain` (`mantle` or `celo`).
+
 `POST /api/usage/deposit/verify`
 
 Verifies a Mantle MNT or Celo USDT deposit to the selected chain's `LangclawUsageVault`.
@@ -317,6 +322,16 @@ Lists automation run history.
 `POST /api/automation/telegram/webhook`
 
 Receives Telegram webhook updates.
+
+`POST /api/automation/webhooks/{slug}`
+
+Receives custom webhook payloads for user-defined automation tasks. The `{slug}` matches the task webhook slug configured in automation settings.
+
+## Watchlist
+
+`POST /api/watchlist`
+
+Actions: `list`, `upsert`, `delete`, `clear`. Stores alpha signals saved from Research results for follow-up monitoring.
 
 ## Environment
 

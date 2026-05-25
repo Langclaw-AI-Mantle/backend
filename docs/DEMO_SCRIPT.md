@@ -30,8 +30,8 @@ Show:
 - Suggested prompt: `Analyze holder flow and smart-money signals on Mantle token 0x5d3a1Ff2b6BAb83b63cd9AD0787074081a52ef34`
 - Second prompt: `Detect liquidity anomaly on Mantle pair 0xeAfc4D6d4c3391Cd4Fc10c85D2f5f972d58C0dD5`
 - Third prompt: `Rank Mantle protocols by TVL and yield momentum`
-- Mantle Alpha or Mantle Intelligence mode
-- Agent workflow panel
+- **Research** mode selected in chat (not legacy Intel/onchain labels)
+- Agent workflow panel with planner through final conclusion steps
 
 ## 0:50 to 1:25
 
@@ -58,7 +58,7 @@ The answer is analysis-only, not a trading execution claim. It gives the signal,
 
 Show:
 
-- Final Mantle Alpha brief
+- Final Research brief with structured report sections (Read, Evidence, Limits, Conclusion)
 - Signal / Evidence / Confidence / Risk note / Recommended watch action bullets
 - Visual summary cards for source quality, whale flow, liquidity, TVL/yield, and confidence/risk
 - Candidate wallet table or liquidity anomaly table

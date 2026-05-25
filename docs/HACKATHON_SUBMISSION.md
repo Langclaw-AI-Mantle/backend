@@ -22,7 +22,7 @@ Langclaw is a Mantle-first AI intelligence and strategy agent that analyzes smar
 | Sustainability | Modular provider layer, optional usage vault, API-key based backend, automation/notification hooks |
 | Insight value | Smart-money transfer summaries, liquidity risk checks, protocol/yield watchlists, Supabase-backed Alpha Watchlist signals, source-backed confidence notes |
 | Strategy alpha | Mantle Liquidity Momentum Strategy with Dune historical rows, equity curve, trade table, win rate, drawdown, deterministic paper orders, and journal proof status |
-| Visualization quality | Mantle Intelligence UI cards, Strategy Lab charts/tables, provider evidence details, source-gap display, on-chain proof panel, Proof Center registry and strategy tables |
+| Visualization quality | Research UI cards (signals, structured report, proof panel), Strategy Lab charts/tables, provider evidence details, source-gap display, Proof Center registry and strategy tables |
 
 ## AI Alpha & Data Criteria
 
@@ -123,7 +123,7 @@ Each trading journal record stores:
 
 ## Demo Prompts
 
-Use these prompts in Mantle Intelligence mode:
+Use these prompts in **Research** mode:
 
 ```text
 Analyze holder flow and smart-money signals on Mantle token 0x5d3a1Ff2b6BAb83b63cd9AD0787074081a52ef34
@@ -203,4 +203,4 @@ Current contract test result depends on local Foundry availability. Run `forge t
 
 Langclaw does not sign, send, swap, buy, sell, or execute live-funds trades in the current hackathon build. Strategy Lab is intentionally scoped to backtesting and paper trading.
 
-Usage billing is ledger-based: user MNT deposits on Mantle or USDT deposits on Celo are credited after vault deposit verification, then Mantle Intelligence / agent requests reserve and settle usage balance internally. The vault is not charged by sending an on-chain transaction for every individual AI request.
+Usage billing is ledger-based: user MNT deposits on Mantle or USDT deposits on Celo are credited after vault deposit verification, then Research and agent requests reserve and settle usage balance internally. The vault is not charged by sending an on-chain transaction for every individual AI request.

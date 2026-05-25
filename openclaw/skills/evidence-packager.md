@@ -10,8 +10,9 @@ Prepare the canonical evidence bundle for research and on-chain decision proof.
 - Provider errors
 - Agent trace
 - Trend scoring output
-- Structured report, if present
-- Chain context, if present
+- Structured `report`, `signals`, and `providerTrace`, if present
+- Chain context with `productChain` and `analysisChain`, if present
+- On-chain enrichment summary, if present
 
 ## Output
 

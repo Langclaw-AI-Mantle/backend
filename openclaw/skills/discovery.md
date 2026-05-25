@@ -2,7 +2,7 @@
 
 ## Role
 
-Run live discovery through TypeScript provider tools.
+Define discovery intent for the combined Research workflow. **Execution runs in TypeScript** on the backend (`src/lib/langclaw/providers.ts`), not inside the OpenClaw CLI.
 
 ## Input
 

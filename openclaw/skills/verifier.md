@@ -8,7 +8,8 @@ Prepare verification fields for the workflow payload and proof panel.
 
 - Evidence bundle
 - Source-backed claim map
-- Generated report or answer context
+- Structured `report` and `alphaSignal`, if present
+- Proof panel metadata only — not the user-facing answer body
 
 ## Checks
 

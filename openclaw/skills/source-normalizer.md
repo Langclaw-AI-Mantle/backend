@@ -2,7 +2,7 @@
 
 ## Role
 
-Normalize every discovered item into the Langclaw `SourceCard` model.
+Normalize every discovered item into the Langclaw `SourceCard` model. **Execution runs in TypeScript** on the backend after discovery completes.
 
 ## Input
 
